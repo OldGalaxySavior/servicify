@@ -1,15 +1,50 @@
-# Додати нового клієнта
-@baseUrl = https://servicify-xax3.onrender.com
-POST {{baseUrl}}/clients
+# Додати клієнта
+POST https://servicify-xax3.onrender.com/clients
 Content-Type: application/json
 
 {
-    "name": "Олена Сидоренко",
-    "phone": "+380681234567",
+    "name": "Іван Петров",
+    "phone": "+380671234567",
     "email": "ivan@example.com"
 }
 
 ###
 
 # Отримати список клієнтів
-GET {{baseUrl}}/clients
+GET https://servicify-xax3.onrender.com/clients
+
+###
+
+# Оновити клієнта (заміни <id> на реальний _id із попередньої відповіді)
+PUT https://servicify-xax3.onrender.com/clients/67bb9ee5450caebf6bf694f6
+Content-Type: application/json
+
+{
+    "name": "Іван Петров (оновлено)",
+    "phone": "+380671234567",
+    "email": "ivan.updated@example.com"
+}
+
+###
+
+# Додати автомобіль (заміни <clientId> на _id клієнта)
+POST https://servicify-xax3.onrender.com/cars
+Content-Type: application/json
+
+{
+    "make": "Toyota",
+    "model": "Corolla",
+    "year": 2021,
+    "vin": "JTDBR32E970000222",
+    "clientId": "67bba4a5ca2c08bc06ee5a8d"
+}
+
+###
+
+# Отримати всі автомобілі
+GET https://servicify-xax3.onrender.com/cars
+
+# Видалити клієнта (заміни <id> на реальний _id)
+DELETE https://servicify-xax3.onrender.com/clients/<id>
+
+###

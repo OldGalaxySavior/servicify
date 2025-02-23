@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Client = require('./models/Client');
-const Car = require('./models/Car'); // Підключаємо модель авто
+const Car = require('./models/Car');
 const app = express();
 
 app.use(express.json());
@@ -43,17 +43,21 @@ app.put('/clients/:id', async (req, res) => {
     try {
         const client = await Client.findByIdAndUpdate(
             req.params.id,
-            {
-                name: req.body.name,
-                phone: req.body.phone,
-                email: req.body.email
-            },
+            { name: req.body.name, phone: req.body.phone, email: req.body.email },
             { new: true, runValidators: true }
         );
-        if (!client) {
-            return res.status(404).send({ error: 'Клієнт не знайдений' });
-        }
+        if (!client) return res.status(404).send({ error: 'Клієнт не знайдений' });
         res.send(client);
+    } catch (err) {
+        res.status(400).send({ error: err.message });
+    }
+});
+
+app.delete('/clients/:id', async (req, res) => {
+    try {
+        const client = await Client.findByIdAndDelete(req.params.id);
+        if (!client) return res.status(404).send({ error: 'Клієнт не знайдений' });
+        res.send({ message: 'Клієнт видалений', client });
     } catch (err) {
         res.status(400).send({ error: err.message });
     }
@@ -78,7 +82,7 @@ app.post('/cars', async (req, res) => {
 
 app.get('/cars', async (req, res) => {
     try {
-        const cars = await Car.find().populate('clientId', 'name phone'); // Повертає ім’я і телефон клієнта
+        const cars = await Car.find().populate('clientId', 'name phone');
         res.send(cars);
     } catch (err) {
         res.status(500).send({ error: err.message });
