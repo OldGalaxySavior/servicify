@@ -45,6 +45,6 @@ Content-Type: application/json
 GET https://servicify-xax3.onrender.com/cars
 
 # Видалити клієнта (заміни <id> на реальний _id)
-DELETE https://servicify-xax3.onrender.com/clients/<id>
+DELETE https://servicify-xax3.onrender.com/clients/67bba277ca2c08bc06ee5a7c
 
 ###

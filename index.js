@@ -89,6 +89,36 @@ app.get('/cars', async (req, res) => {
     }
 });
 
+app.put('/cars/:id', async (req, res) => {
+    try {
+        const car = await Car.findByIdAndUpdate(
+            req.params.id,
+            {
+                make: req.body.make,
+                model: req.body.model,
+                year: req.body.year,
+                vin: req.body.vin,
+                clientId: req.body.clientId
+            },
+            { new: true, runValidators: true }
+        );
+        if (!car) return res.status(404).send({ error: 'Автомобіль не знайдений' });
+        res.send(car);
+    } catch (err) {
+        res.status(400).send({ error: err.message });
+    }
+});
+
+app.delete('/cars/:id', async (req, res) => {
+    try {
+        const car = await Car.findByIdAndDelete(req.params.id);
+        if (!car) return res.status(404).send({ error: 'Автомобіль не знайдений' });
+        res.send({ message: 'Автомобіль видалений', car });
+    } catch (err) {
+        res.status(400).send({ error: err.message });
+    }
+});
+
 app.listen(process.env.PORT || 3000, () => {
     console.log('Сервер працює');
 });
