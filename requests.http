@@ -1,0 +1,15 @@
+# Додати нового клієнта
+@baseUrl = https://servicify-xax3.onrender.com
+POST {{baseUrl}}/clients
+Content-Type: application/json
+
+{
+    "name": "Олена Сидоренко",
+    "phone": "+380681234567",
+    "email": "ivan@example.com"
+}
+
+###
+
+# Отримати список клієнтів
+GET {{baseUrl}}/clients
