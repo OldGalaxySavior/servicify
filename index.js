@@ -15,6 +15,6 @@ app.get('/', (req, res) => {
     res.send('Привіт, це твій додаток для СТО!');
 });
 
-app.listen(3000, () => {
-    console.log('Сервер працює на http://localhost:3000');
+app.listen(process.env.PORT || 3000, () => {
+    console.log('Сервер працює online');
 });
