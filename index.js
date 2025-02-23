@@ -5,7 +5,7 @@ const app = express();
 app.use(express.json());
 
 // Підключення до локального MongoDB
-mongoose.connect('mongodb+srv://eclipset:FTt2N4cmxNXgwzCW@servicify.x8nxi.mongodb.net/?retryWrites=true&w=majority&appName=servicify', {
+mongoose.connect(process.env.MONGODB_URI,{
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => console.log('MongoDB підключено'))
