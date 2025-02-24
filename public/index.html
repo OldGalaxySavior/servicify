@@ -17,6 +17,9 @@
 </head>
 <body>
     <h1>Управління клієнтами СТО</h1>
+    <select id="stationSelect" onchange="loadClients()">
+        <option value="">Виберіть СТО</option>
+    </select>
     <table id="clientsTable">
         <thead>
             <tr>
@@ -49,9 +52,23 @@
     <script>
         const apiUrl = 'https://servicify-xax3.onrender.com'; // Змінимо на servicify.app після SSL
 
+        // Завантаження СТО
+        async function loadStations() {
+            const response = await fetch(`${apiUrl}/stations`);
+            const stations = await response.json();
+            const select = document.getElementById('stationSelect');
+            stations.forEach(station => {
+                const option = document.createElement('option');
+                option.value = station._id;
+                option.textContent = station.name;
+                select.appendChild(option);
+            });
+        }
         // Завантаження клієнтів
         async function loadClients() {
-            const response = await fetch(`${apiUrl}/clients`);
+            const stationId = document.getElementById('stationSelect').value;
+            const url = stationId ? `${apiUrl}/clients?stationId=${stationId}` : `${apiUrl}/clients`;
+            const response = await fetch(url);
             const clients = await response.json();
             const tbody = document.querySelector('#clientsTable tbody');
             tbody.innerHTML = '';
@@ -73,10 +90,13 @@
         // Додавання клієнта
         document.getElementById('clientForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const stationId = document.getElementById('stationSelect').value;
+            if (!stationId) return alert('Виберіть СТО!');
             const client = {
                 name: document.getElementById('name').value,
                 phone: document.getElementById('phone').value,
-                email: document.getElementById('email').value
+                email: document.getElementById('email').value,
+                stationId
             };
             await fetch(`${apiUrl}/clients`, {
                 method: 'POST',
@@ -125,8 +145,8 @@
             document.getElementById('editForm').style.display = 'none';
         }
 
-        // Завантажуємо клієнтів при старті
-        loadClients();
+        // Завантажуємо при старті
+        loadStations().then(loadClients);
     </script>
 </body>
 </html>

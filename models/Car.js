@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
 
 const carSchema = new mongoose.Schema({
-    make: { type: String, required: true }, // Марка (наприклад, Toyota)
-    model: { type: String, required: true }, // Модель (наприклад, Corolla)
-    year: { type: Number, required: true }, // Рік випуску
-    vin: { type: String, unique: true, }, // VIN-код (опціонально унікальний)
-    clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: true } // Посилання на клієнта
+    make: { type: String, required: true },
+    model: { type: String, required: true },
+    year: { type: Number, required: true },
+    vin: { type: String, unique: true },
+    clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: true },
+    stationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Station', required: true }
 });
 
 module.exports = mongoose.model('Car', carSchema);

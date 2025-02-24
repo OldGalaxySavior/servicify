@@ -3,11 +3,12 @@ const mongoose = require('mongoose');
 const Client = require('./models/Client');
 const Car = require('./models/Car');
 const Service = require('./models/Service');
-const path = require('path'); // Додаємо path
+const Station = require('./models/Station'); // Додаємо Station
+const path = require('path');
 const app = express();
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public'))); // Статичні файли з папки public
+app.use(express.static(path.join(__dirname, 'public')));
 
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('MongoDB підключено'))
@@ -15,7 +16,18 @@ mongoose.connect(process.env.MONGODB_URI)
 
 // Головна сторінка
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html')); // Віддаємо index.html
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// --- СТО ---
+app.post('/stations', async (req, res) => {
+    try {
+        const station = new Station({ name: req.body.name, location: req.body.location });
+        await station.save();
+        res.status(201).send(station);
+    } catch (err) {
+        res.status(400).send({ error: err.message });
+    }
 });
 
 // --- Клієнти ---
@@ -24,7 +36,9 @@ app.post('/clients', async (req, res) => {
         const client = new Client({
             name: req.body.name,
             phone: req.body.phone,
-            email: req.body.email
+            email: req.body.email,
+            globalClientId: req.body.globalClientId || mongoose.Types.ObjectId().toString(), // Генеруємо, якщо не вказано
+            stationId: req.body.stationId
         });
         await client.save();
         res.status(201).send(client);
@@ -35,7 +49,8 @@ app.post('/clients', async (req, res) => {
 
 app.get('/clients', async (req, res) => {
     try {
-        const clients = await Client.find();
+        const stationId = req.query.stationId; // Фільтр за СТО
+        const clients = await Client.find(stationId ? { stationId } : {});
         res.send(clients);
     } catch (err) {
         res.status(500).send({ error: err.message });
@@ -46,7 +61,7 @@ app.put('/clients/:id', async (req, res) => {
     try {
         const client = await Client.findByIdAndUpdate(
             req.params.id,
-            { name: req.body.name, phone: req.body.phone, email: req.body.email },
+            { name: req.body.name, phone: req.body.phone, email: req.body.email, stationId: req.body.stationId },
             { new: true, runValidators: true }
         );
         if (!client) return res.status(404).send({ error: 'Клієнт не знайдений' });
