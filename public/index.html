@@ -207,19 +207,40 @@
         function cancelEdit() {
             document.getElementById('editForm').style.display = 'none';
         }
+        // Завантаження авто
+        async function loadCars() {
+            const stationId = document.getElementById('stationSelect').value;
+            const url = stationId ? `${apiUrl}/cars?stationId=${stationId}` : `${apiUrl}/cars`;
+            const response = await fetch(url);
+            const cars = await response.json();
+            const tbody = document.querySelector('#carsTable tbody');
+            tbody.innerHTML = '';
+            cars.forEach(car => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${car.make}</td>
+                    <td>${car.model}</td>
+                    <td>${car.year}</td>
+                    <td>${car.vin || ''}</td>
+                    <td>${car.currentOwnerId ? car.currentOwnerId.name : 'Невідомо'}</td>
+                    <td>
+                        <button onclick="alert('Оновлення авто в розробці')">Оновити</button>
+                        <button onclick="deleteCar('${car._id}')">Видалити</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }       
 
         // Додавання авто
         document.getElementById('carForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const stationId = document.getElementById('stationSelect').value;
-            if (!stationId) return alert('Виберіть СТО!');
             const car = {
                 make: document.getElementById('carMake').value,
                 model: document.getElementById('carModel').value,
                 year: parseInt(document.getElementById('carYear').value),
                 vin: document.getElementById('carVin').value,
-                clientId: document.getElementById('carClientId').value,
-                stationId
+                clientId: document.getElementById('carClientId').value
             };
             await fetch(`${apiUrl}/cars`, {
                 method: 'POST',

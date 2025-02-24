@@ -93,13 +93,13 @@ app.delete('/clients/:id', async (req, res) => {
 // --- Автомобілі ---
 app.post('/cars', async (req, res) => {
     try {
+        console.log('Дані для авто:', req.body);
         const car = new Car({
             make: req.body.make,
             model: req.body.model,
             year: req.body.year,
             vin: req.body.vin,
-            clientId: req.body.clientId,
-            stationId: req.body.stationId
+            currentOwnerId: req.body.clientId
         });
         await car.save();
         res.status(201).send(car);
@@ -111,8 +111,23 @@ app.post('/cars', async (req, res) => {
 app.get('/cars', async (req, res) => {
     try {
         const stationId = req.query.stationId;
-        const cars = await Car.find().populate('clientId', 'name phone');
+        const clients = await Client.find({ stationId });
+        const clientIds = clients.map(c => c._id);
+        const cars = await Car.find({ currentOwnerId: { $in: clientIds } }).populate('currentOwnerId', 'name phone');
         res.send(cars);
+    } catch (err) {
+        res.status(500).send({ error: err.message });
+    }
+});
+
+// --- Історія обслуговування ---
+app.get('/services', async (req, res) => {
+    try {
+        const stationId = req.query.stationId;
+        const services = await Service.find({
+            $or: [{ stationId }, { allowedStations: stationId }]
+        }).populate('carId', 'make model vin');
+        res.send(services);
     } catch (err) {
         res.status(500).send({ error: err.message });
     }
