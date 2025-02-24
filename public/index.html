@@ -82,6 +82,19 @@
 
     <script>
         // Завантаження СТО для форми
+        async function loadStations() {
+            const response = await fetch(`${apiUrl}/stations`);
+            const stations = await response.json();
+            const select = document.getElementById('stationSelect');
+            select.innerHTML = '<option value="">Виберіть СТО</option>';
+            stations.forEach(station => {
+                const option = document.createElement('option');
+                option.value = station._id;
+                option.textContent = station.name;
+                select.appendChild(option);
+            });
+        }
+
         async function loadStationsForForm() {
             const response = await fetch(`${apiUrl}/stations`);
             const stations = await response.json();
