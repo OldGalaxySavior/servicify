@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Client = require('./models/Client');
 const Car = require('./models/Car');
+const Service = require('./models/Service'); // Нова модель
 const app = express();
 
 app.use(express.json());
@@ -93,13 +94,7 @@ app.put('/cars/:id', async (req, res) => {
     try {
         const car = await Car.findByIdAndUpdate(
             req.params.id,
-            {
-                make: req.body.make,
-                model: req.body.model,
-                year: req.body.year,
-                vin: req.body.vin,
-                clientId: req.body.clientId
-            },
+            { make: req.body.make, model: req.body.model, year: req.body.year, vin: req.body.vin, clientId: req.body.clientId },
             { new: true, runValidators: true }
         );
         if (!car) return res.status(404).send({ error: 'Автомобіль не знайдений' });
@@ -116,6 +111,30 @@ app.delete('/cars/:id', async (req, res) => {
         res.send({ message: 'Автомобіль видалений', car });
     } catch (err) {
         res.status(400).send({ error: err.message });
+    }
+});
+
+// --- Історія обслуговування ---
+app.post('/services', async (req, res) => {
+    try {
+        const service = new Service({
+            carId: req.body.carId,
+            description: req.body.description,
+            cost: req.body.cost
+        });
+        await service.save();
+        res.status(201).send(service);
+    } catch (err) {
+        res.status(400).send({ error: err.message });
+    }
+});
+
+app.get('/services', async (req, res) => {
+    try {
+        const services = await Service.find().populate('carId', 'make model vin');
+        res.send(services);
+    } catch (err) {
+        res.status(500).send({ error: err.message });
     }
 });
 
