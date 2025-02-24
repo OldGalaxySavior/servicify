@@ -44,7 +44,79 @@ Content-Type: application/json
 # Отримати всі автомобілі
 GET https://servicify-xax3.onrender.com/cars
 
+###
+
 # Видалити клієнта (заміни <id> на реальний _id)
 DELETE https://servicify-xax3.onrender.com/clients/67bba277ca2c08bc06ee5a7c
 
 ###
+
+# Додати авто
+POST https://servicify-xax3.onrender.com/cars
+Content-Type: application/json
+
+{
+    "make": "Toyota",
+    "model": "Land Cruiser",
+    "year": 2000,
+    "vin": "JTDBR32E970300001",
+    "clientId": "67bb9ee5450caebf6bf694f6"
+}
+
+###
+
+# Оновити авто (заміни <id> на _id із відповіді POST)
+PUT https://servicify-xax3.onrender.com/cars/<id>
+Content-Type: application/json
+
+{
+    "make": "Toyota",
+    "model": "Camry",
+    "year": 2020,
+    "vin": "JTDBR32E970000001",
+    "clientId": "67bba30aca2c08bc06ee5a85"
+}
+
+###
+
+# Видалити авто (заміни <id>)
+DELETE https://servicify-xax3.onrender.com/cars/67bba47aca2c08bc06ee5a8a
+
+###
+
+# Отримати всі авто
+GET https://servicify-xax3.onrender.com/cars
+
+###
+
+# Додати історію
+POST https://servicify-xax3.onrender.com/services
+Content-Type: application/json
+
+{
+    "carId": "<carId>",
+    "description": "Заміна масла та фільтрів",
+    "cost": 1500
+}
+
+###
+
+# Оновити історію (заміни <serviceId>)
+PUT https://servicify-xax3.onrender.com/services/<serviceId>
+Content-Type: application/json
+
+{
+    "carId": "<carId>",
+    "description": "Заміна масла та гальмівних колодок",
+    "cost": 2000
+}
+
+###
+
+# Видалити історію (заміни <serviceId>)
+DELETE https://servicify-xax3.onrender.com/services/<serviceId>
+
+###
+
+# Отримати історію
+GET https://servicify-xax3.onrender.com/services

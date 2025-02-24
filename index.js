@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Client = require('./models/Client');
 const Car = require('./models/Car');
-const Service = require('./models/Service'); // Нова модель
+const Service = require('./models/Service');
 const app = express();
 
 app.use(express.json());
@@ -135,6 +135,30 @@ app.get('/services', async (req, res) => {
         res.send(services);
     } catch (err) {
         res.status(500).send({ error: err.message });
+    }
+});
+
+app.put('/services/:id', async (req, res) => {
+    try {
+        const service = await Service.findByIdAndUpdate(
+            req.params.id,
+            { carId: req.body.carId, description: req.body.description, cost: req.body.cost },
+            { new: true, runValidators: true }
+        );
+        if (!service) return res.status(404).send({ error: 'Запис не знайдений' });
+        res.send(service);
+    } catch (err) {
+        res.status(400).send({ error: err.message });
+    }
+});
+
+app.delete('/services/:id', async (req, res) => {
+    try {
+        const service = await Service.findByIdAndDelete(req.params.id);
+        if (!service) return res.status(404).send({ error: 'Запис не знайдений' });
+        res.send({ message: 'Запис видалений', service });
+    } catch (err) {
+        res.status(400).send({ error: err.message });
     }
 });
 
