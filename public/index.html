@@ -17,7 +17,7 @@
 </head>
 <body>
     <h1>Управління СТО</h1>
-    <select id="stationSelect" onchange="loadClients(); loadCars();">
+    <select id="stationSelect" onchange="loadClients(); loadCars(); loadServices();">
         <option value="">Виберіть СТО</option>
     </select>
 
@@ -80,10 +80,32 @@
         <button type="submit">Додати авто</button>
     </form>
 
+    <h2>Історія обслуговування</h2>
+    <table id="servicesTable">
+        <thead>
+            <tr>
+                <th>Авто</th>
+                <th>Дата</th>
+                <th>Опис</th>
+                <th>Вартість</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <form id="serviceForm">
+        <select id="serviceCarId" required>
+            <option value="">Виберіть авто</option>
+        </select>
+        <input type="text" id="serviceDescription" placeholder="Опис" required>
+        <input type="number" id="serviceCost" placeholder="Вартість" required>
+        <button type="submit">Додати ремонт</button>
+    </form>
+
     <script>
         const apiUrl = 'https://servicify-xax3.onrender.com';
 
-        // Завантаження СТО для форми
         async function loadStations() {
             try {
                 const response = await fetch(`${apiUrl}/stations`);
@@ -122,12 +144,14 @@
             }
         }
 
-
-        // Завантаження клієнтів
         async function loadClients() {
             const stationId = document.getElementById('stationSelect').value;
             const url = stationId ? `${apiUrl}/clients?stationId=${stationId}` : `${apiUrl}/clients`;
             const response = await fetch(url);
+            if (!response.ok) {
+                console.error('Помилка завантаження клієнтів:', response.status);
+                return;
+            }
             const clients = await response.json();
             const tbody = document.querySelector('#clientsTable tbody');
             const clientSelect = document.getElementById('carClientId');
@@ -152,14 +176,15 @@
             });
         }
 
-        // Завантаження авто
         async function loadCars() {
             const stationId = document.getElementById('stationSelect').value;
             const url = stationId ? `${apiUrl}/cars?stationId=${stationId}` : `${apiUrl}/cars`;
             const response = await fetch(url);
             const cars = await response.json();
             const tbody = document.querySelector('#carsTable tbody');
+            const carSelect = document.getElementById('serviceCarId');
             tbody.innerHTML = '';
+            carSelect.innerHTML = '<option value="">Виберіть авто</option>';
             cars.forEach(car => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -167,17 +192,42 @@
                     <td>${car.model}</td>
                     <td>${car.year}</td>
                     <td>${car.vin || ''}</td>
-                    <td>${car.clientId ? car.clientId.name : 'Невідомо'}</td>
+                    <td>${car.currentOwnerId ? car.currentOwnerId.name : 'Невідомо'}</td>
                     <td>
                         <button onclick="alert('Оновлення авто в розробці')">Оновити</button>
                         <button onclick="deleteCar('${car._id}')">Видалити</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
+                const option = document.createElement('option');
+                option.value = car._id;
+                option.textContent = `${car.make} ${car.model} (${car.vin || 'без VIN'})`;
+                carSelect.appendChild(option);
             });
         }
 
-        // Додавання клієнта
+        async function loadServices() {
+            const stationId = document.getElementById('stationSelect').value;
+            const url = stationId ? `${apiUrl}/services?stationId=${stationId}` : `${apiUrl}/services`;
+            const response = await fetch(url);
+            const services = await response.json();
+            const tbody = document.querySelector('#servicesTable tbody');
+            tbody.innerHTML = '';
+            services.forEach(service => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${service.carId ? `${service.carId.make} ${service.carId.model}` : 'Невідомо'}</td>
+                    <td>${new Date(service.date).toLocaleDateString()}</td>
+                    <td>${service.description}</td>
+                    <td>${service.cost}</td>
+                    <td>
+                        <button onclick="deleteService('${service._id}')">Видалити</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
         document.getElementById('clientForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const stationId = document.getElementById('stationId').value;
@@ -197,7 +247,6 @@
             e.target.reset();
         });
 
-        // Видалення клієнта
         async function deleteClient(id) {
             if (confirm('Видалити клієнта?')) {
                 await fetch(`${apiUrl}/clients/${id}`, { method: 'DELETE' });
@@ -206,7 +255,6 @@
             }
         }
 
-        // Редагування клієнта
         function editClient(id, name, phone, email) {
             document.getElementById('editId').value = id;
             document.getElementById('editName').value = name;
@@ -236,32 +284,7 @@
         function cancelEdit() {
             document.getElementById('editForm').style.display = 'none';
         }
-        // Завантаження авто
-        async function loadCars() {
-            const stationId = document.getElementById('stationSelect').value;
-            const url = stationId ? `${apiUrl}/cars?stationId=${stationId}` : `${apiUrl}/cars`;
-            const response = await fetch(url);
-            const cars = await response.json();
-            const tbody = document.querySelector('#carsTable tbody');
-            tbody.innerHTML = '';
-            cars.forEach(car => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${car.make}</td>
-                    <td>${car.model}</td>
-                    <td>${car.year}</td>
-                    <td>${car.vin || ''}</td>
-                    <td>${car.currentOwnerId ? car.currentOwnerId.name : 'Невідомо'}</td>
-                    <td>
-                        <button onclick="alert('Оновлення авто в розробці')">Оновити</button>
-                        <button onclick="deleteCar('${car._id}')">Видалити</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }       
 
-        // Додавання авто
         document.getElementById('carForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const car = {
@@ -280,7 +303,6 @@
             e.target.reset();
         });
 
-        // Видалення авто
         async function deleteCar(id) {
             if (confirm('Видалити авто?')) {
                 await fetch(`${apiUrl}/cars/${id}`, { method: 'DELETE' });
@@ -288,11 +310,37 @@
             }
         }
 
-        // Завантажуємо при старті
+        document.getElementById('serviceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const stationId = document.getElementById('stationSelect').value;
+            if (!stationId) return alert('Виберіть СТО!');
+            const service = {
+                carId: document.getElementById('serviceCarId').value,
+                description: document.getElementById('serviceDescription').value,
+                cost: parseInt(document.getElementById('serviceCost').value),
+                stationId
+            };
+            await fetch(`${apiUrl}/services`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(service)
+            });
+            loadServices();
+            e.target.reset();
+        });
+
+        async function deleteService(id) {
+            if (confirm('Видалити ремонт?')) {
+                await fetch(`${apiUrl}/services/${id}`, { method: 'DELETE' });
+                loadServices();
+            }
+        }
+
         loadStations().then(() => {
             loadClients();
             loadCars();
-            loadStationsForForm(); // Додаємо для форми
+            loadStationsForForm();
+            loadServices();
         });
     </script>
 </body>
