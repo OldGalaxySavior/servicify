@@ -12,6 +12,7 @@
         button { margin: 5px; padding: 5px 10px; }
         form { margin-top: 20px; }
         input { margin: 5px; padding: 5px; }
+        #editForm { display: none; background: #f9f9f9; padding: 10px; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
@@ -35,6 +36,16 @@
         <button type="submit">Додати клієнта</button>
     </form>
 
+    <form id="editForm">
+        <h3>Оновити клієнта</h3>
+        <input type="hidden" id="editId">
+        <input type="text" id="editName" placeholder="Ім’я" required>
+        <input type="text" id="editPhone" placeholder="Телефон" required>
+        <input type="email" id="editEmail" placeholder="Email">
+        <button type="submit">Зберегти</button>
+        <button type="button" onclick="cancelEdit()">Скасувати</button>
+    </form>
+
     <script>
         const apiUrl = 'https://servicify-xax3.onrender.com'; // Змінимо на servicify.app після SSL
 
@@ -51,7 +62,7 @@
                     <td>${client.phone}</td>
                     <td>${client.email || ''}</td>
                     <td>
-                        <button onclick="editClient('${client._id}')">Оновити</button>
+                        <button onclick="editClient('${client._id}', '${client.name}', '${client.phone}', '${client.email || ''}')">Оновити</button>
                         <button onclick="deleteClient('${client._id}')">Видалити</button>
                     </td>
                 `;
@@ -84,10 +95,34 @@
             }
         }
 
-        // Оновлення клієнта (тимчасово простий alert, розширимо пізніше)
-        async function editClient(id) {
-            alert('Функція оновлення в розробці для ID: ' + id);
-            // Тут можна додати форму для редагування
+        // Редагування клієнта
+        function editClient(id, name, phone, email) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editName').value = name;
+            document.getElementById('editPhone').value = phone;
+            document.getElementById('editEmail').value = email;
+            document.getElementById('editForm').style.display = 'block';
+        }
+
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editId').value;
+            const client = {
+                name: document.getElementById('editName').value,
+                phone: document.getElementById('editPhone').value,
+                email: document.getElementById('editEmail').value
+            };
+            await fetch(`${apiUrl}/clients/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(client)
+            });
+            loadClients();
+            document.getElementById('editForm').style.display = 'none';
+        });
+
+        function cancelEdit() {
+            document.getElementById('editForm').style.display = 'none';
         }
 
         // Завантажуємо клієнтів при старті
