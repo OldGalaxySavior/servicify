@@ -41,11 +41,12 @@ app.get('/stations', async (req, res) => {
 // --- Клієнти ---
 app.post('/clients', async (req, res) => {
     try {
+        console.log('Дані від фронтенду:', req.body); // Для дебагу
         const client = new Client({
             name: req.body.name,
             phone: req.body.phone,
             email: req.body.email,
-            globalClientId: req.body.globalClientId || mongoose.Types.ObjectId().toString(), // Генеруємо, якщо не вказано
+            globalClientId: req.body.globalClientId || new mongoose.Types.ObjectId().toString(),
             stationId: req.body.stationId
         });
         await client.save();
