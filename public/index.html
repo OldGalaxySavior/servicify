@@ -38,6 +38,9 @@
         <input type="text" id="name" placeholder="Ім’я" required>
         <input type="text" id="phone" placeholder="Телефон" required>
         <input type="email" id="email" placeholder="Email">
+        <select id="stationId" required>
+            <option value="">Виберіть СТО</option>
+        </select>
         <button type="submit">Додати клієнта</button>
     </form>
 
@@ -78,13 +81,11 @@
     </form>
 
     <script>
-        const apiUrl = 'https://servicify-xax3.onrender.com';
-
-        // Завантаження СТО
-        async function loadStations() {
+        // Завантаження СТО для форми
+        async function loadStationsForForm() {
             const response = await fetch(`${apiUrl}/stations`);
             const stations = await response.json();
-            const select = document.getElementById('stationSelect');
+            const select = document.getElementById('stationId');
             select.innerHTML = '<option value="">Виберіть СТО</option>';
             stations.forEach(station => {
                 const option = document.createElement('option');
@@ -93,6 +94,7 @@
                 select.appendChild(option);
             });
         }
+
 
         // Завантаження клієнтів
         async function loadClients() {
@@ -151,7 +153,7 @@
         // Додавання клієнта
         document.getElementById('clientForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const stationId = document.getElementById('stationSelect').value;
+            const stationId = document.getElementById('stationId').value;
             if (!stationId) return alert('Виберіть СТО!');
             const client = {
                 name: document.getElementById('name').value,
@@ -263,6 +265,7 @@
         loadStations().then(() => {
             loadClients();
             loadCars();
+            loadStationsForForm(); // Додаємо для форми
         });
     </script>
 </body>

@@ -41,13 +41,13 @@ app.get('/stations', async (req, res) => {
 // --- Клієнти ---
 app.post('/clients', async (req, res) => {
     try {
-        console.log('Дані від фронтенду:', req.body); // Для дебагу
+        console.log('Дані від фронтенду:', req.body);
         const client = new Client({
             name: req.body.name,
             phone: req.body.phone,
             email: req.body.email,
             globalClientId: req.body.globalClientId || new mongoose.Types.ObjectId().toString(),
-            stationId: req.body.stationId
+            stationIds: [req.body.stationId] // Додаємо перше СТО як масив
         });
         await client.save();
         res.status(201).send(client);
@@ -58,8 +58,8 @@ app.post('/clients', async (req, res) => {
 
 app.get('/clients', async (req, res) => {
     try {
-        const stationId = req.query.stationId; // Фільтр за СТО
-        const clients = await Client.find(stationId ? { stationId } : {});
+        const stationId = req.query.stationId;
+        const clients = await Client.find(stationId ? { stationIds: stationId } : {});
         res.send(clients);
     } catch (err) {
         res.status(500).send({ error: err.message });
@@ -111,7 +111,7 @@ app.post('/cars', async (req, res) => {
 app.get('/cars', async (req, res) => {
     try {
         const stationId = req.query.stationId;
-        const clients = await Client.find({ stationId });
+        const clients = await Client.find({ stationIds: stationId });
         const clientIds = clients.map(c => c._id);
         const cars = await Car.find({ currentOwnerId: { $in: clientIds } }).populate('currentOwnerId', 'name phone');
         res.send(cars);
@@ -119,6 +119,23 @@ app.get('/cars', async (req, res) => {
         res.status(500).send({ error: err.message });
     }
 });
+
+//Додати СТО до клієнта
+app.put('/clients/:id/add-station', async (req, res) => {
+    try {
+        const client = await Client.findById(req.params.id);
+        if (!client) return res.status(404).send({ error: 'Клієнт не знайдений' });
+        const stationId = req.body.stationId;
+        if (!client.stationIds.includes(stationId)) {
+            client.stationIds.push(stationId);
+            await client.save();
+        }
+        res.send(client);
+    } catch (err) {
+        res.status(400).send({ error: err.message });
+    }
+});
+
 
 // --- Історія обслуговування ---
 app.get('/services', async (req, res) => {
