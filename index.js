@@ -98,7 +98,8 @@ app.post('/cars', async (req, res) => {
             model: req.body.model,
             year: req.body.year,
             vin: req.body.vin,
-            clientId: req.body.clientId
+            clientId: req.body.clientId,
+            stationId: req.body.stationId
         });
         await car.save();
         res.status(201).send(car);
@@ -109,6 +110,7 @@ app.post('/cars', async (req, res) => {
 
 app.get('/cars', async (req, res) => {
     try {
+        const stationId = req.query.stationId;
         const cars = await Car.find().populate('clientId', 'name phone');
         res.send(cars);
     } catch (err) {
