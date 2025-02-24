@@ -29,6 +29,14 @@ app.post('/stations', async (req, res) => {
         res.status(400).send({ error: err.message });
     }
 });
+app.get('/stations', async (req, res) => {
+    try {
+        const stations = await Station.find();
+        res.send(stations);
+    } catch (err) {
+        res.status(500).send({ error: err.message });
+    }
+});
 
 // --- Клієнти ---
 app.post('/clients', async (req, res) => {
