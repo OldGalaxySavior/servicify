@@ -6,20 +6,22 @@
     <title>Servicify - СТО</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        table { border-collapse: collapse; width: 100%; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; }
         button { margin: 5px; padding: 5px 10px; }
-        form { margin-top: 20px; }
+        form, select { margin-top: 20px; }
         input { margin: 5px; padding: 5px; }
         #editForm { display: none; background: #f9f9f9; padding: 10px; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
-    <h1>Управління клієнтами СТО</h1>
-    <select id="stationSelect" onchange="loadClients()">
+    <h1>Управління СТО</h1>
+    <select id="stationSelect" onchange="loadClients(); loadCars();">
         <option value="">Виберіть СТО</option>
     </select>
+
+    <h2>Клієнти</h2>
     <table id="clientsTable">
         <thead>
             <tr>
@@ -49,14 +51,41 @@
         <button type="button" onclick="cancelEdit()">Скасувати</button>
     </form>
 
+    <h2>Автомобілі</h2>
+    <table id="carsTable">
+        <thead>
+            <tr>
+                <th>Марка</th>
+                <th>Модель</th>
+                <th>Рік</th>
+                <th>VIN</th>
+                <th>Клієнт</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <form id="carForm">
+        <input type="text" id="carMake" placeholder="Марка" required>
+        <input type="text" id="carModel" placeholder="Модель" required>
+        <input type="number" id="carYear" placeholder="Рік" required>
+        <input type="text" id="carVin" placeholder="VIN">
+        <select id="carClientId" required>
+            <option value="">Виберіть клієнта</option>
+        </select>
+        <button type="submit">Додати авто</button>
+    </form>
+
     <script>
-        const apiUrl = 'https://servicify-xax3.onrender.com'; // Змінимо на servicify.app після SSL
+        const apiUrl = 'https://servicify-xax3.onrender.com';
 
         // Завантаження СТО
         async function loadStations() {
             const response = await fetch(`${apiUrl}/stations`);
             const stations = await response.json();
             const select = document.getElementById('stationSelect');
+            select.innerHTML = '<option value="">Виберіть СТО</option>';
             stations.forEach(station => {
                 const option = document.createElement('option');
                 option.value = station._id;
@@ -64,6 +93,7 @@
                 select.appendChild(option);
             });
         }
+
         // Завантаження клієнтів
         async function loadClients() {
             const stationId = document.getElementById('stationSelect').value;
@@ -71,7 +101,9 @@
             const response = await fetch(url);
             const clients = await response.json();
             const tbody = document.querySelector('#clientsTable tbody');
+            const clientSelect = document.getElementById('carClientId');
             tbody.innerHTML = '';
+            clientSelect.innerHTML = '<option value="">Виберіть клієнта</option>';
             clients.forEach(client => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -81,6 +113,35 @@
                     <td>
                         <button onclick="editClient('${client._id}', '${client.name}', '${client.phone}', '${client.email || ''}')">Оновити</button>
                         <button onclick="deleteClient('${client._id}')">Видалити</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+                const option = document.createElement('option');
+                option.value = client._id;
+                option.textContent = client.name;
+                clientSelect.appendChild(option);
+            });
+        }
+
+        // Завантаження авто
+        async function loadCars() {
+            const stationId = document.getElementById('stationSelect').value;
+            const url = stationId ? `${apiUrl}/cars?stationId=${stationId}` : `${apiUrl}/cars`;
+            const response = await fetch(url);
+            const cars = await response.json();
+            const tbody = document.querySelector('#carsTable tbody');
+            tbody.innerHTML = '';
+            cars.forEach(car => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${car.make}</td>
+                    <td>${car.model}</td>
+                    <td>${car.year}</td>
+                    <td>${car.vin || ''}</td>
+                    <td>${car.clientId ? car.clientId.name : 'Невідомо'}</td>
+                    <td>
+                        <button onclick="alert('Оновлення авто в розробці')">Оновити</button>
+                        <button onclick="deleteCar('${car._id}')">Видалити</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -112,6 +173,7 @@
             if (confirm('Видалити клієнта?')) {
                 await fetch(`${apiUrl}/clients/${id}`, { method: 'DELETE' });
                 loadClients();
+                loadCars();
             }
         }
 
@@ -138,6 +200,7 @@
                 body: JSON.stringify(client)
             });
             loadClients();
+            loadCars();
             document.getElementById('editForm').style.display = 'none';
         });
 
@@ -145,8 +208,41 @@
             document.getElementById('editForm').style.display = 'none';
         }
 
+        // Додавання авто
+        document.getElementById('carForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const stationId = document.getElementById('stationSelect').value;
+            if (!stationId) return alert('Виберіть СТО!');
+            const car = {
+                make: document.getElementById('carMake').value,
+                model: document.getElementById('carModel').value,
+                year: parseInt(document.getElementById('carYear').value),
+                vin: document.getElementById('carVin').value,
+                clientId: document.getElementById('carClientId').value,
+                stationId
+            };
+            await fetch(`${apiUrl}/cars`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(car)
+            });
+            loadCars();
+            e.target.reset();
+        });
+
+        // Видалення авто
+        async function deleteCar(id) {
+            if (confirm('Видалити авто?')) {
+                await fetch(`${apiUrl}/cars/${id}`, { method: 'DELETE' });
+                loadCars();
+            }
+        }
+
         // Завантажуємо при старті
-        loadStations().then(loadClients);
+        loadStations().then(() => {
+            loadClients();
+            loadCars();
+        });
     </script>
 </body>
 </html>

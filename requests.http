@@ -94,8 +94,8 @@ POST https://servicify-xax3.onrender.com/services
 Content-Type: application/json
 
 {
-    "carId": "<carId>",
-    "description": "Заміна масла та фільтрів",
+    "carId": "67bc352cf3ab30e19cd4df78",
+    "description": "Заміна фігні",
     "cost": 1500
 }
 
@@ -107,16 +107,31 @@ Content-Type: application/json
 
 {
     "carId": "67bc352cf3ab30e19cd4df78",
-    "description": "Заміна масла та гальмівних колодок",
+    "description": "Заміна масла та гальмівних колодок 1",
     "cost": 2000
 }
 
 ###
 
 # Видалити історію (заміни <serviceId>)
-DELETE https://servicify-xax3.onrender.com/services/<serviceId>
+DELETE https://servicify-xax3.onrender.com/services/67bc37f67503fbcef1c53317
 
 ###
 
 # Отримати історію
 GET https://servicify-xax3.onrender.com/services
+
+###
+
+# Додай тестове СТО
+POST https://servicify-xax3.onrender.com/stations
+Content-Type: application/json
+
+{
+    "name": "СТО Київ",
+    "location": "Київ, вул. Авто, 1"
+}
+
+###
+# Отримати список СТО
+GET https://servicify-xax3.onrender.com/stations
