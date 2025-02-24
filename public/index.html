@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicify - СТО</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { margin: 5px; padding: 5px 10px; }
+        form { margin-top: 20px; }
+        input { margin: 5px; padding: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Управління клієнтами СТО</h1>
+    <table id="clientsTable">
+        <thead>
+            <tr>
+                <th>Ім’я</th>
+                <th>Телефон</th>
+                <th>Email</th>
+                <th>Дії</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <form id="clientForm">
+        <input type="text" id="name" placeholder="Ім’я" required>
+        <input type="text" id="phone" placeholder="Телефон" required>
+        <input type="email" id="email" placeholder="Email">
+        <button type="submit">Додати клієнта</button>
+    </form>
+
+    <script>
+        const apiUrl = 'https://servicify-xax3.onrender.com'; // Змінимо на servicify.app після SSL
+
+        // Завантаження клієнтів
+        async function loadClients() {
+            const response = await fetch(`${apiUrl}/clients`);
+            const clients = await response.json();
+            const tbody = document.querySelector('#clientsTable tbody');
+            tbody.innerHTML = '';
+            clients.forEach(client => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${client.name}</td>
+                    <td>${client.phone}</td>
+                    <td>${client.email || ''}</td>
+                    <td>
+                        <button onclick="editClient('${client._id}')">Оновити</button>
+                        <button onclick="deleteClient('${client._id}')">Видалити</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Додавання клієнта
+        document.getElementById('clientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const client = {
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value
+            };
+            await fetch(`${apiUrl}/clients`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(client)
+            });
+            loadClients();
+            e.target.reset();
+        });
+
+        // Видалення клієнта
+        async function deleteClient(id) {
+            if (confirm('Видалити клієнта?')) {
+                await fetch(`${apiUrl}/clients/${id}`, { method: 'DELETE' });
+                loadClients();
+            }
+        }
+
+        // Оновлення клієнта (тимчасово простий alert, розширимо пізніше)
+        async function editClient(id) {
+            alert('Функція оновлення в розробці для ID: ' + id);
+            // Тут можна додати форму для редагування
+        }
+
+        // Завантажуємо клієнтів при старті
+        loadClients();
+    </script>
+</body>
+</html>

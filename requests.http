@@ -102,11 +102,11 @@ Content-Type: application/json
 ###
 
 # Оновити історію (заміни <serviceId>)
-PUT https://servicify-xax3.onrender.com/services/<serviceId>
+PUT https://servicify-xax3.onrender.com/services/67bc352cf3ab30e19cd4df78
 Content-Type: application/json
 
 {
-    "carId": "<carId>",
+    "carId": "67bc352cf3ab30e19cd4df78",
     "description": "Заміна масла та гальмівних колодок",
     "cost": 2000
 }

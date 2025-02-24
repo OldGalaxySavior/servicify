@@ -3,9 +3,11 @@ const mongoose = require('mongoose');
 const Client = require('./models/Client');
 const Car = require('./models/Car');
 const Service = require('./models/Service');
+const path = require('path'); // Додаємо path
 const app = express();
 
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public'))); // Статичні файли з папки public
 
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('MongoDB підключено'))
@@ -13,7 +15,7 @@ mongoose.connect(process.env.MONGODB_URI)
 
 // Головна сторінка
 app.get('/', (req, res) => {
-    res.send('Привіт, це твій додаток для СТО!');
+    res.sendFile(path.join(__dirname, 'public', 'index.html')); // Віддаємо index.html
 });
 
 // --- Клієнти ---
